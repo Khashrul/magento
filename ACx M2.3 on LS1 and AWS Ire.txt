@@ -1,0 +1,362 @@
+#####################################################################################
+AWS: Ubuntu 16.4 + Mage 2.3: Time Required: 
+LS1: Mage Upgrade 2.1.5 to 2.3: 
+#####################################################################################
+
+Public Key: 7e6316303bc95d9c409fadcc7a0c1a42 
+Private Key: 2324a6dcd117ac79f0a4893649d6b6a4 
+
+0.a) create DB backup
+=====================
+mysqldump -u acx_mag2wp_u1 -p acx_mag2wp_db1 > acx_mag2wp_db1_1801218.sql
+t9W!c3L$d#H2a
+***********
+LS1
+***********
+1.a. MySQL database: Create new db and user on LS1:
+==================================================
+mysql > mysql -u root -p
+Dhaka$5^
+
+create new DB:
+mysql > CREATE DATABASE acx_m23 CHARACTER SET utf8 COLLATE utf8_bin;
+mysql > CREATE USER 'Agile'@'localhost' IDENTIFIED BY 'MsAgile$5^';
+mysql > GRANT ALL PRIVILEGES ON  acx_m23.* TO 'Agile'@'localhost' WITH GRANT OPTION;
+mysql > FLUSH PRIVILEGES; 
+mysql > exit;
+
+mysql -u Agile -p acx_m23 < acx_mag2wp_db1_1801218.sql
+MsAgile$5^
+
+mysql -u Agile -p acx_mag226
+MsAgile$5^
+
+Configuration checking and changing:
+sudo vi app/etc/env.php
+sudo vi wp/wp-config.php
+
+1.b Create Vhost
+================
+sudo cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/dev23.acx.ls1.conf
+sudo vi /etc/apache2/sites-available/dev23.acx.ls1.conf
+
+###########
+<VirtualHost *:80>
+    ServerAdmin info@agilecodex.com
+    ServerName dev23.acx.ls1
+    ServerAlias www.dev23.acx.ls1
+    DocumentRoot /var/www/dev23.acx.ls1/public_html/
+    <Directory /var/www/dev23.acx.ls1/public_html/>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/dev23.acx.ls1-error.log
+    CustomLog ${APACHE_LOG_DIR}/dev23.acx.ls1-access.log combined
+</VirtualHost>
+###########
+
+sudo a2ensite dev23.acx.ls1.conf
+sudo a2enmod ssl
+
+sudo vi /etc/hosts
+
+[...]
+127.0.0.1   dev23.acx.ls1
+
+sudo service apache2 restart
+
+1.c Create folder and extract:
+=============================
+sudo mkdir -p /var/www/dev23.acx.ls1/public_html/
+sudo cp -a /var/www/dev.acx.ls1/public_html/. /var/www/dev23.acx.ls1/public_html/
+cd /var/www/dev23.acx.ls1/public_html/
+# sudo tar -xzf /var/tmp/acx_mage2_wp_180118_copy.tar.tz
+sudo chmod -R 777 .
+
+
+1.d) Upgrade using the command line
+===================================
+(**** Due to spaghetti code in dev.acx M 2.1.5 version, we should start from fresh start.*****)
+**** GO TO 2.a) point ********
+composer require magento/product-community-edition 2.3.0 --no-update
+composer update
+
+Err!!! M 2.3.0 requires php ~7.1.3||~7.2.0
+
+1.d.i)Install PHP 7.1
+===============
+sudo apt-get -y update
+sudo apt-get install -y python-software-properties
+sudo add-apt-repository ppa:ondrej/php
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt-get -y update
+sudo service apache2 stop
+sudo apt-get install -y php7.1 libapache2-mod-php7.1 php7.1-common php7.1-gd php7.1-mysql php7.1-curl php7.1-intl php7.1-xsl php7.1-mbstring php7.1-zip php7.1-bcmath php7.1-iconv php7.1-soap
+php -v
+apt-cache pkgnames | grep php7.1
+
+------------ Set Default PHP Version 7.1 ------------
+$ sudo update-alternatives --set php /usr/bin/php7.1
+
+$ sudo a2dismod php7.1
+$ sudo a2enmod php7.2
+$ sudo systemctl restart apache2
+
+1.d.ii)Install PHP 7.2
+===============
+sudo apt-get -y update
+sudo apt-get install -y python-software-properties
+sudo add-apt-repository ppa:ondrej/php
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt-get -y update
+sudo service apache2 stop
+sudo apt-get install -y php7.2 libapache2-mod-php7.2 php7.2-common php7.2-gd php7.2-mysql php7.2-curl php7.2-intl php7.2-xsl php7.2-mbstring php7.2-zip php7.2-bcmath php7.2-iconv php7.2-soap
+php -v
+apt-cache pkgnames | grep php7.2
+
+------------ Set Default PHP Version 7.2 ------------
+$ sudo update-alternatives --set php /usr/bin/php7.2
+
+$ sudo a2dismod php7.1
+$ sudo a2enmod php7.2
+$ sudo systemctl restart apache2
+
+1.d.iii)install mcrypt for PHP7.2 using PECL:
+============================================
+sudo apt-get install php-pear
+sudo pecl install mcrypt-1.0.1
+add "extension=mcrypt.so" to php.ini:
+sudo bash -c "echo extension=/usr/lib/php/20170718/mcrypt.so > /etc/php/7.2/cli/conf.d/mcrypt.ini"
+sudo bash -c "echo extension=/usr/lib/php/20170718/mcrypt.so > /etc/php/7.2/apache2/conf.d/mcrypt.ini"
+
+
+sudo apt-get purge php7.1-common php7.1-cli php7.1-fpm
+
+
+1.d.iv)After Upgrading:
+=====================
+"php": "7.0.2|7.0.4|~7.0.6|~7.1.0|~7.2.0",
+
+
+1.d.v) Fix error of upgraded sites After Upgrading:
+==================================================
+Err! Deprecated: The each() function is deprecated. This message will be suppressed on further calls 
+in /var/www/dev23.acx.ls1/public_html/vendor/colinmollenhour/cache-backend-file/File.php on line 81
+Solution:
+each() function is deprecated in php 7.2 so change this function to foreach()
+Change:
+while (list($name, $value) = each($options)) {
+      $this->setOption($name, $value);
+  }
+To:
+foreach ($options as $name => $value){
+    $this->setOption($name, $value);
+}
+
+Err! Deprecated: The each() function is deprecated. This message will be suppressed on further calls 
+in /var/www/dev23.acx.ls1/public_html/vendor/magento/zendframework1/library/Zend/Cache/Backend.php on line 79
+Solution:
+each() function is deprecated in php 7.2 so change this function to foreach()
+Change:
+while (list($name, $value) = each($directives)) {
+To:
+foreach ($directives as $name => $value){
+
+Err! Exception: Deprecated Functionality: Function mcrypt_module_open() is deprecated 
+in /var/www/dev23.acx.ls1/public_html/vendor/magento/framework/Encryption/Crypt.php on line 54
+Change:
+
+
+sudo rm -rf var/cache/*
+sudo rm -rf var/page_cache/*
+sudo rm -rf var/generation/*
+
+sudo php bin/magento setup:upgrade
+
+1.d.vi) Fix error of existing sites After installing php 7.2:
+============================================================
+Fix for «Declaration of Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country::getAllOptions() 
+must be compatible with Magento\Eav\Model\Entity\Attribute\Source\Table::getAllOptions($withEmpty = true, $defaultValues = false)
+
+Replace the line:
+
+/Magento/Customer/Model/ResourceModel/Address/Attribute/Source/Country.php#L52-L52
+    public function getAllOptions()
+with the following one:
+    public function getAllOptions($withEmpty = true, $defaultValues = false)
+
+
+2.a) Install fresh Magento 2.3 from the scratch without old DB:
+==============================================================
+
+
+change to developer mode:
+=========================
+sudo php -f bin/magento deploy:mode:show
+
+sudo rm -rf pub/static/*/*; sudo rm -rf var/*/*; sudo rm -rf var/generation/*;
+
+sudo php -f bin/magento deploy:mode:set developer -s (or --skip-compilation)
+
+sudo php -f bin/magento deploy:mode:set production
+
+
+deploy:
+=========
+sudo php -f bin/magento setup:upgrade
+
+sudo php -f bin/magento indexer:reindex
+
+
+sudo php -f bin/magento setup:di:compile 
+
+sudo rm -rf pub/static/*/*; sudo rm -rf var/*/*; 
+sudo php -f bin/magento setup:static-content:deploy -f  --theme Mgs/amely
+
+sudo rm -rf pub/static/*/*; sudo rm -rf var/*/*; 
+sudo php -f bin/magento setup:static-content:deploy -f  --theme Mgs/mgsblank
+
+sudo php bin/magento cache:clean
+
+Emely theme installation:
+sudo php bin/magento module:enable MGS_Mpanel
+sudo php bin/magento module:enable MGS_AmelyTheme
+sudo php bin/magento module:enable MGS_AjaxCart
+sudo php bin/magento module:enable MGS_Blog
+sudo php bin/magento module:enable MGS_Brand
+sudo php bin/magento module:enable MGS_InstantSearch
+sudo php bin/magento module:enable MGS_Lookbook
+sudo php bin/magento module:enable MGS_Mmegamenu
+sudo php bin/magento module:enable MGS_Portfolio
+sudo php bin/magento module:enable MGS_Promobanners
+sudo php bin/magento module:enable MGS_Protabs
+sudo php bin/magento module:enable MGS_QuickView
+sudo php bin/magento module:enable MGS_Social
+sudo php bin/magento module:enable MGS_StoreLocator
+sudo php bin/magento module:enable MGS_Testimonial
+sudo php bin/magento module:enable MGS_Ajaxlayernavigation
+sudo php bin/magento module:enable MGS_GDPR
+sudo php bin/magento module:enable MGS_Guestwishlist
+sudo php bin/magento module:enable MGS_ExtraGallery
+sudo php bin/magento module:enable MGS_Landing
+
+sudo php bin/magento module:disable MGS_Mpanel
+
+sudo php bin/magento module:disable MGS_InstantSearch
+
+sudo gitlab-ctl stop
+
+
+
+
+select * from m_core_config_data WHERE path LIKE '%base_url%'
+select path, value, REPLACE(value, 'stg.dev23.acx.ls1', 'demo.agilecodex.com/fab') from m_core_config_data WHERE path LIKE '%base_url%'
+UPDATE  m_core_config_data SET value = REPLACE(value, 'dev23.acx.ls1', 'demo.agilecodex.com/fab')  WHERE path LIKE '%base_url%'
+
+sudo rm -rf pub/static/*/*; sudo rm -rf var/*/*; 
+sudo php -f bin/magento setup:static-content:deploy -f
+
+sudo chown -R www-data:www-data .
+sudo find . -type f -exec chmod 644 {} \;
+sudo find . -type d -exec chmod 755 {} \;
+sudo find ./var -type d -exec chmod 777 {} \;
+sudo find ./pub/media -type d -exec chmod 777 {} \;
+sudo find ./pub/static -type d -exec chmod 777 {} \;
+sudo chmod 777 ./app/etc ;
+sudo chmod 644 ./app/etc/*.xml ;
+chmod -R -v 777 var/cache
+chmod -R -v 770 var/generted
+
+sudo grep -rnw . -e 'Product with SKU "" does not exist' 
+
+Make a directory for global installations:
+
+mkdir ~/.npm-global
+Configure npm to use the new directory path:
+
+npm config set prefix '~/.npm-global'
+Open or create a ~/.profile file and add this line:
+
+export PATH=~/.npm-global/bin:$PATH
+Back on the command line, update your system variables:
+
+source ~/.profile
+Test: Download a package globally without using sudo.
+
+npm install -g grunt-cli
+
+php bin/magento module:enable WeltPixel_Backend --clear-static-content 
+php bin/magento module:enable WeltPixel_OwlCarouselSlider --clear-static-content 
+php bin/magento setup:upgrade 
+
+
+sudo php bin/magento module:enable Ewave_ExtendedBundleProduct --clear-static-content
+sudo php bin/magento module:enable Forix_Minilogin --clear-static-content
+sudo php bin/magento module:disable MagentoCatalog --clear-static-content
+
+https://magento.stackexchange.com/questions/101799/magento-2-backend-session-timeout
+
+sudo php bin/magento module:enable Sellry_LetterFilter --clear-static-content
+
+stripe payment:
+===============
+sudo bin/magento maintenance:enable
+sudo composer clear-cache
+sudo composer require mage2pro/stripe:*
+sudo bin/magento setup:upgrade
+sudo rm -rf var/di var/generation generated/code && sudo bin/magento setup:di:compile
+sudo rm -rf pub/static/* && sudo bin/magento setup:static-content:deploy -f en_US 
+sudo bin/magento maintenance:disable
+sudo rm -rf var/di generated/code generated/code
+sudo chmod -R 777 generated
+theme_dir error:
+===============
+select * from m_theme where theme_id > 3 and theme_id < 9
+delete from m_theme where theme_id > 3 and theme_id < 9
+
+
+Less Compiler installation:
+==========================
+Step 1. Edit your composer.json:
+
+{
+    "require": {
+
+"oyejorge/less.php": "~1.7.0.9"
+    }
+}
+
+Step 2. Install it:
+
+$ curl -sS https://getcomposer.org/installer | php
+$ php composer.phar install
+
+Install PHP extension on Fablo server:
+=====================================
+sudo apt-get -y update
+sudo add-apt-repository ppa:ondrej/php
+sudo apt-get -y update
+sudo apt-get install -y php7.0 libapache2-mod-php7.0 php7.0-common php7.0-gd php7.0-mysql php7.0-mcrypt php7.0-curl php7.0-intl php7.0-xsl php7.0-mbstring php7.0-zip php7.0-bcmath php7.0-iconv php7.0-soap
+
+
+sudo php bin/magento module:disable Ewave_ExtendedBundleProduct --clear-static-content
+sudo php bin/magento module:enable Zewave_ExtendedBundleProduct --clear-static-content
+
+
+
+
+
+
+try following solution
+
+root> php bin/magento setup:static-content:deploy -f
+
+root> sudo rm -rf var/cache/* var/page_cache/* var/view_preprocessed/* var/generation/* pub/static/*
+
+Give write permisson for pub/media pub/static var generated
+
+sudo chmod -R 777 pub/media pub/static var generated
+
+
+

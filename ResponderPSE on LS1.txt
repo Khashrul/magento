@@ -1,0 +1,265 @@
+#####################################################################################
+AWS: Ubuntu 16.4 + Mage 2.3: Time Required: 
+LS1: Mage Upgrade 2.1.5 to 2.3: 
+#####################################################################################
+
+Public Key: 7e6316303bc95d9c409fadcc7a0c1a42 
+Private Key: 2324a6dcd117ac79f0a4893649d6b6a4 
+
+0.a) create DB backup
+=====================
+find big subdirectory:
+du -hs * | sort -hr
+
+tar --exclude=~/public_html/pub/media/catalog/product/ --exclude=~/public_html/pub/media/tmp --exclude=~/public_html/pub/static/ -czf responder_1801220.tar.tz ~/public_html/
+
+mysqldump -u m2respon_test -p m2respon_test > m2respon_181220.sql
+6MALnR8jKozk
+
+***********
+LS1
+***********
+1.a. MySQL database: Create new db and user on LS1:
+==================================================
+mysql > mysql -u root -p
+Dhaka$5^
+
+create new DB:
+mysql > CREATE DATABASE m2respon_test CHARACTER SET utf8 COLLATE utf8_bin;
+mysql > CREATE USER 'Agile'@'localhost' IDENTIFIED BY 'MsAgile$5^';
+mysql > GRANT ALL PRIVILEGES ON  acx_m23.* TO 'Agile'@'localhost' WITH GRANT OPTION;
+mysql > FLUSH PRIVILEGES; 
+mysql > exit;
+
+mysql -u Agile -p m2respon_test < m2respon_181220.sql
+MsAgile$5^
+
+mysql -u Agile -p m2respon_test
+MsAgile$5^
+
+Configuration checking and changing:
+sudo vi app/etc/env.php
+sudo vi wp/wp-config.php
+
+1.b Create Vhost
+================
+sudo cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/resp.ls1.conf
+sudo vi /etc/apache2/sites-available/resp.ls1.conf
+
+###########
+<VirtualHost *:80>
+    ServerAdmin info@agilecodex.com
+    ServerName resp.ls1
+    ServerAlias www.resp.ls1
+    DocumentRoot /var/www/resp.ls1/public_html/
+    <Directory /var/www/resp.ls1/public_html/>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/resp.ls1-error.log
+    CustomLog ${APACHE_LOG_DIR}/resp.ls1-access.log combined
+</VirtualHost>
+###########
+
+sudo a2ensite resp.ls1.conf
+sudo a2enmod ssl
+
+sudo vi /etc/hosts
+
+[...]
+127.0.0.1   resp.ls1
+
+sudo service apache2 restart
+
+1.c Create folder and extract:
+=============================
+sudo mkdir -p /var/www/resp.ls1/public_html/
+sudo cp -a /var/www/dev.acx.ls1/public_html/. /var/www/resp.ls1/public_html/
+cd /var/www/resp.ls1/public_html/
+# sudo tar -xzf /var/tmp/acx_mage2_wp_180118_copy.tar.tz
+sudo chmod -R 777 .
+
+
+
+
+
+Err!
+The following modules are outdated:\nAcx_Agile1 schema: current version - none, required version - 1.0.0
+
+change to developer mode:
+=========================
+sudo php -f bin/magento deploy:mode:show
+
+sudo rm -rf pub/static/*/*; sudo rm -rf var/*/*; sudo rm -rf var/generation/*;
+
+sudo php -f bin/magento deploy:mode:set developer -s (or --skip-compilation)
+
+sudo php -f bin/magento deploy:mode:set production
+
+New Use Creation:
+==================
+
+php bin/magento admin:user:create \
+    --admin-user="khashrul" \
+    --admin-password="kjf4aaeugr&5" \
+    --admin-email="khashrul@agilecodex.com" \
+    --admin-firstname="Khashrul" \
+    --admin-lastname="Alam" 
+
+Kjf4aaeugr&5
+
+deploy:
+=========
+sudo php -f bin/magento setup:upgrade
+
+sudo php -f bin/magento indexer:reindex
+
+
+sudo php -f bin/magento setup:di:compile 
+
+sudo rm -rf pub/static/*/*; sudo rm -rf var/*/*; 
+sudo php -f bin/magento setup:static-content:deploy -f
+
+sudo php -f bin/magento setup:static-content:deploy -f --theme Local/argento-flat-custom --language en_US
+sudo php -f bin/magento setup:static-content:deploy -f --theme Swissup/argento-flat --language en_US
+
+sudo php bin/magento cache:clean
+sudo php bin/magento cache:flush
+sudo chmod -R 777 .
+
+
+
+sudo php bin/magento module:disable Acx_Wholesale --clear-static-content
+sudo php bin/magento module:enable Acx_Catalog --clear-static-content
+sudo php bin/magento module:disable Acx_Customeractivation --clear-static-content
+sudo php bin/magento module:disable Acx_Grid --clear-static-content
+sudo php bin/magento module:disable Acx_LoginCatalog --clear-static-content
+sudo php bin/magento module:disable Acx_HidePrice --clear-static-content
+sudo rm -rf Acx/Module/*/*;
+sudo php bin/magento module:enable Acx_Simpleshipping --clear-static-content
+
+sudo php bin/magento module:enable Acx_MinicartOpen --clear-static-content
+
+sudo php bin/magento module:enable MageArray_Customeractivation --clear-static-content
+
+sudo php bin/magento module:enable MageArray_LoginCatalog --clear-static-content
+sudo php bin/magento module:enable MageArray_HidePrice --clear-static-content
+
+
+sudo php bin/magento module:disable MGS_ExtraGallery --clear-static-content
+
+sudo php bin/magento module:enable Acx_Purchase --clear-static-content
+sudo gitlab-ctl stop
+
+sudo php bin/magento module:status
+
+
+select * from m_core_config_data WHERE path LIKE '%base_url%'
+select path, value, REPLACE(value, 'stg.resp.ls1', 'demo.agilecodex.com/fab') from m_core_config_data WHERE path LIKE '%base_url%'
+UPDATE  m_core_config_data SET value = REPLACE(value, 'resp.ls1', 'demo.agilecodex.com/fab')  WHERE path LIKE '%base_url%'
+
+
+
+Redis
+===========
+
+bin/magento setup:config:set --cache-backend=redis --cache-backend-redis-server=<parameter_value>
+bin/magento setup:config:set --cache-backend=redis --cache-backend-redis-port=6379
+bin/magento setup:config:set --cache-backend=redis --cache-backend-redis-database=0
+bin/magento setup:config:set --cache-backend=redis --cache-backend-redis-password=<parameter_value>
+
+sudo chown -R www-data:www-data .
+sudo find . -type f -exec chmod 644 {} \;
+sudo find . -type d -exec chmod 755 {} \;
+sudo find ./var -type d -exec chmod 777 {} \;
+sudo find ./pub/media -type d -exec chmod 777 {} \;
+sudo find ./pub/static -type d -exec chmod 777 {} \;
+sudo chmod 777 ./app/etc ;
+sudo chmod 644 ./app/etc/*.xml ;
+
+find . -type f -exec chmod 644 {} \;
+find . -type d -exec chmod 755 {} \;
+find ./var -type d -exec chmod 777 {} \;
+find ./pub/media -type d -exec chmod 777 {} \;
+find ./pub/static -type d -exec chmod 777 {} \;
+chmod 777 ./app/etc ;
+chmod 644 ./app/etc/*.xml ;
+
+
+sudo grep -rnw . -e '/customers/isEmailAvailable' 
+
+Make a directory for global installations:
+
+mkdir ~/.npm-global
+Configure npm to use the new directory path:
+
+npm config set prefix '~/.npm-global'
+Open or create a ~/.profile file and add this line:
+
+export PATH=~/.npm-global/bin:$PATH
+Back on the command line, update your system variables:
+
+source ~/.profile
+Test: Download a package globally without using sudo.
+
+npm install -g grunt-cli
+
+php bin/magento module:enable WeltPixel_Backend --clear-static-content 
+php bin/magento module:enable WeltPixel_OwlCarouselSlider --clear-static-content 
+php bin/magento setup:upgrade 
+
+
+sudo php bin/magento module:enable Ewave_ExtendedBundleProduct --clear-static-content
+sudo php bin/magento module:enable Forix_Minilogin --clear-static-content
+
+https://magento.stackexchange.com/questions/101799/magento-2-backend-session-timeout
+
+sudo php bin/magento module:enable Sellry_LetterFilter --clear-static-content
+
+stripe payment:
+===============
+sudo bin/magento maintenance:enable
+sudo composer clear-cache
+sudo composer require mage2pro/stripe:*
+sudo bin/magento setup:upgrade
+sudo rm -rf var/di var/generation generated/code && sudo bin/magento setup:di:compile
+sudo rm -rf pub/static/* && sudo bin/magento setup:static-content:deploy -f en_US 
+sudo bin/magento maintenance:disable
+
+
+theme_dir error:
+===============
+select * from m_theme where theme_id > 3 and theme_id < 9
+delete from m_theme where theme_id > 3 and theme_id < 9
+
+
+Less Compiler installation:
+==========================
+Step 1. Edit your composer.json:
+
+{
+    "require": {
+
+"oyejorge/less.php": "~1.7.0.9"
+    }
+}
+
+Step 2. Install it:
+
+$ curl -sS https://getcomposer.org/installer | php
+$ php composer.phar install
+
+Install PHP extension on Fablo server:
+=====================================
+sudo apt-get -y update
+sudo add-apt-repository ppa:ondrej/php
+sudo apt-get -y update
+sudo apt-get install -y php7.0 libapache2-mod-php7.0 php7.0-common php7.0-gd php7.0-mysql php7.0-mcrypt php7.0-curl php7.0-intl php7.0-xsl php7.0-mbstring php7.0-zip php7.0-bcmath php7.0-iconv php7.0-soap
+
+
+sudo php bin/magento module:disable Ewave_ExtendedBundleProduct --clear-static-content
+sudo php bin/magento module:enable Zewave_ExtendedBundleProduct --clear-static-content
+
+
+https://www.advancedcustomfields.com/downloads/

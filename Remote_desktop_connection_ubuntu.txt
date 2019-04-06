@@ -1,0 +1,62 @@
+Open desktop sharing preferences:
+1.sharing option:
+	Allow other users to view your desktop ->check
+	  Allow other users to control your desktop  ->check
+
+2.security:
+	Require the user to enter this password:Give Password ->check
+
+3.Show Notifications Area icon:
+	Only when someone is connected ->check
+	
+--------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+open dconf editor:
+
+then go to org\gnome\desktop open remote-access file
+   require-encryption option ->unchecked
+
+
+Install tight vnc viewer :
+
+open tight vnc:
+
+connect:ip address
+password:
+
+if this type of error message show in connection time:Error in tightVNC viewer no connection could be made because the target machine actively refused it 
+
+
+open cmd run this command:
+	sudo x11vnc -xkb -noxrecord -noxfixes -noxdamage -display :0 -auth /var/run/lightdm/root/:0 -usepw
+
+
+
+connect again:
+
+
+
+Open full window using tightvnx press:
+
+ctrl+alt+shift+f
+
+source link:
+https://www.youtube.com/watch?v=gemAacoe78U
+
+
+change the screen resolution in VNC viewer for Ubuntu 16.04 without a monitor:
+
+set_screen_resolution_ubuntu :
+open terminal:
+run this command:
+	xrandr --fb 1600x900
+
+
+source link:
+https://askubuntu.com/questions/287096/how-to-change-the-screen-resolution-in-vnc-viewer-for-ubuntu-12-04-without-a-mon
+
+	
+
+	
+

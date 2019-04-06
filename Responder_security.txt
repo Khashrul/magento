@@ -1,0 +1,102 @@
+Credentials - Website:
+new:
+====
+m2.responderpse.com
+dev
+N8nKL16v620O
+port : 2223
+
+Here is admin access
+http://dev.responderpse.com/admin_1bal45
+wasim1
+wasim123!
+
+new for m2:
+=========
+Credentials - Website
+https://m2.responderpse.com/admin_1bal45
+wasim
+H84k*w6Pv5VN
+
+FTP
+ftp.m2.responderpse.com
+wasim@m2.responderpse.com
+H84k*w6Pv5VN
+
+MySql
+m2respon_wasim
+m2respon_test
+
+SSH (69.27.38.82:2223)
+m2responderpse
+yee8Aecholi0
+
+New:
+===
+https://dev.responderpse.com/admin_1bal45/
+wasim
+9&Gh4BUud&N*
+
+FTP
+wasim
+9&Gh4BUud&N*
+
+ftp user name is actually wasim@dev.responderpse.com
+
+ssh
+host: 69.27.38.82
+User: dev
+Pass: N8nKL16v620O
+
+ftp p/w is now H84k*w6Pv5VN2
+
+Old
+===
+https://m2.responderpse.com/admin_1bal45
+wasim
+H84k*w6Pv5VN
+Site admin p/w is now H84k*w6Pv5VN2
+
+FTP
+ftp.m2.responderpse.com
+wasim@m2.responderpse.com
+H84k*w6Pv5VN
+
+ftp p/w is now H84k*w6Pv5VN2
+
+MySql
+m2respon_wasim
+m2respon_test
+
+'dbname' => 'm2respon_test',
+                'username' => 'm2respon_test',
+                'password' => '6MALnR8jKozk',
+
+SSH (69.27.38.82:2223)
+m2responderpse
+yee8Aecholi0
+
+
+
+=====
+Credentials - Website
+https://m2.responderpse.com/admin_1bal45
+wasim
+H84k*w6Pv5VN
+
+FTP
+ftp.m2.responderpse.com
+wasim@m2.responderpse.com
+H84k*w6Pv5VN
+
+MySql
+m2respon_wasim
+m2respon_test
+
+SSH (69.27.38.82:2223)
+m2responderpse
+yee8Aecholi0
+
+Site admin p/w is now H84k*w6Pv5VN2
+
+ftp p/w is now H84k*w6Pv5VN2
